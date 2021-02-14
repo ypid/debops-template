@@ -9,6 +9,16 @@ _skip_if_exists:
   - defaults/main.yml
   - tasks/main.yml
 
+_tasks:
+  - |-
+    if ! test -f "$(git rev-parse --show-toplevel)/ansible/playbooks/service/$(basename "$PWD")"; then
+      mv playbook/* "$(git rev-parse --show-toplevel)/ansible/playbooks/service/"
+    fi
+    rm playbook -rf
+
+# Note: References to the answers of other questions sees to not work currently
+# in the same run of Copier.
+
 creation_year:
   type: int
   default: '[[ (now()|string).split("-")[0] ]]'
