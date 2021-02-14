@@ -1,0 +1,208 @@
+---
+# Copyright (C) [[ creation_year ]] [[ author_fullname ]] <[[ author_email ]]>
+# Copyright (C) [[ creation_year ]] DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- import_role:
+    name: 'secret'
+
+# Install packages [[ "[[[" ]]1
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", ([[ role_name ]]__base_packages
+                              + [[ role_name ]]__packages)) }}'
+    state: 'present'
+  register: [[ role_name ]]__register_packages
+  until: [[ role_name ]]__register_packages is succeeded
+
+# Create [[ project_name ]] system user [[ "[[[" ]]1
+- name: Create [[ project_name ]] system group
+  group:
+    name: '{{ [[ role_name ]]__group }}'
+    state: 'present'
+    system: True
+
+- name: Create [[ project_name ]] system user
+  user:
+    name: '{{ [[ role_name ]]__user }}'
+    group: '{{ [[ role_name ]]__group }}'
+    home: '{{ [[ role_name ]]__home }}'
+    comment: '{{ [[ role_name ]]__gecos }}'
+    shell: '{{ [[ role_name ]]__shell }}'
+    state: 'present'
+    system: True
+
+- name: Create additional directories used by [[ project_name ]]
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ [[ role_name ]]__user }}'
+    group: '{{ [[ role_name ]]__group }}'
+    mode: '0755'
+  with_items:
+    - '{{ [[ role_name ]]__etc }}'
+    - '{{ [[ role_name ]]__src }}'
+    - '{{ [[ role_name ]]__git_dest | dirname }}'
+    - '{{ [[ role_name ]]__lib }}'
+    - '{{ [[ role_name ]]__data }}'
+
+# Download [[ project_name ]] server [[ "[[[" ]]1
+- name: Clone [[ project_name ]] source code
+  git:
+    repo: '{{ [[ role_name ]]__git_repo }}'
+    dest: '{{ [[ role_name ]]__git_checkout }}'
+    separate_git_dir: '{{ [[ role_name ]]__git_dest }}'
+    version: '{{ [[ role_name ]]__git_version }}'
+    update: True
+    ## The module cannot hash lock and verify the tag referring to the locked
+    ## commit thus we need to verify the tag in the following task.
+    # verify_commit: True
+  become: True
+  become_user: '{{ [[ role_name ]]__user }}'
+  register: [[ role_name ]]__register_source
+
+- name: Verify git tag signature
+  shell: git verify-tag --raw "$(git describe)"
+  args:
+    chdir: '{{ [[ role_name ]]__git_checkout }}'
+    warn: False
+  become: True
+  become_user: '{{ [[ role_name ]]__user }}'
+  changed_when: False
+  ## Always run this to also cover the case where the playbook is interrupted
+  ## before we can verify.
+  # when: [[ role_name ]]__register_source is changed
+
+- name: Install [[ project_name ]] requirements in virtualenv
+  pip:
+    virtualenv: '{{ [[ role_name ]]__virtualenv }}'
+    virtualenv_python: 'python3'
+    virtualenv_site_packages: True
+    requirements: '{{ [[ role_name ]]__git_checkout + "/requirements.txt" }}'
+    extra_args: '--upgrade'
+  register: [[ role_name ]]__register_pip_install
+  until: [[ role_name ]]__register_pip_install is succeeded
+  become: True
+  become_user: '{{ [[ role_name ]]__user }}'
+  notify: [ 'Restart gunicorn for [[ role_name ]]' ]
+  when: [[ role_name ]]__register_source is changed
+
+- name: Clean up stale Python bytecode
+  command: find . -name '*.pyc' -delete
+  args:
+    chdir: '{{ [[ role_name ]]__git_checkout }}'
+  become: True
+  become_user: '{{ [[ role_name ]]__user }}'
+  when: [[ role_name ]]__register_source is changed
+
+# Configure [[ project_name ]] server [[ "[[[" ]]1
+- name: Exclude secret files from etckeeper
+  copy:
+    content: |
+      secret.txt
+    dest: '{{ [[ role_name ]]__etc + "/.gitignore" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  tags: [ 'role::[[ role_name ]]:config' ]
+
+- name: Generate [[ project_name ]] configuration
+  template:
+    src: 'etc/[[ role_name ]]-server/[[ role_name ]]-server.ini.j2'
+    dest: '{{ [[ role_name ]]__etc + "/[[ role_name ]]-server.ini" }}'
+    owner: 'root'
+    group: '{{ [[ role_name ]]__group }}'
+    mode: '0640'
+  register: [[ role_name ]]__register_config
+  notify: [ 'Restart gunicorn for [[ role_name ]]' ]
+  tags: [ 'role::[[ role_name ]]:config' ]
+
+- name: Generate extended [[ project_name ]] configuration
+  template:
+    src: 'usr/local/lib/[[ role_name ]]/app/[[ role_name ]]_site_settings.py.j2'
+    dest: '{{ [[ role_name ]]__git_checkout + "/[[ role_name ]]_site_settings.py" }}'
+    owner: '{{ [[ role_name ]]__user }}'
+    group: '{{ [[ role_name ]]__group }}'
+    mode: '0640'
+  register: [[ role_name ]]__register_config
+  notify: [ 'Restart gunicorn for [[ role_name ]]' ]
+  tags: [ 'role::[[ role_name ]]:config' ]
+
+- name: Generate [[ project_name ]] secret.txt file
+  template:
+    src: 'etc/[[ role_name ]]-server/secret.txt.j2'
+    dest: '{{ [[ role_name ]]__config_secret_key_filepath }}'
+    owner: 'root'
+    group: '{{ [[ role_name ]]__group }}'
+    mode: '0640'
+  notify: [ 'Restart gunicorn for [[ role_name ]]' ]
+  tags: [ 'role::[[ role_name ]]:config' ]
+
+- name: Perform database installation or migration
+  shell: |
+    ## -o nounset can be enabled with virtualenv >= 16.2.
+    ## Ref: https://github.com/pypa/virtualenv/pull/922
+    set -o pipefail -o errexit;
+    source {{ [[ role_name ]]__virtualenv }}/bin/activate
+    ./manage.py migrate
+  args:
+    chdir: '{{ [[ role_name ]]__git_checkout }}'
+    executable: 'bash'
+  become: True
+  become_user: '{{ [[ role_name ]]__user }}'
+  changed_when: ("No migrations to apply." not in [[ role_name ]]__register_migration.stdout)
+  when: [[ role_name ]]__register_source is changed or [[ role_name ]]__register_config is changed
+  register: [[ role_name ]]__register_migration
+
+- name: Create superuser account
+  environment:
+    SUPERUSER_NAME: '{{ [[ role_name ]]__superuser_name }}'
+    SUPERUSER_EMAIL: '{{ [[ role_name ]]__superuser_email }}'
+    SUPERUSER_PASSWORD: '{{ [[ role_name ]]__superuser_password }}'
+  shell:
+    ## -o nounset can be enabled with virtualenv >= 16.2.
+    ## Ref: https://github.com/pypa/virtualenv/pull/922
+    set -o pipefail -o errexit;
+    source {{ [[ role_name ]]__virtualenv }}/bin/activate;
+    echo "from django.contrib.auth.models import User;
+          User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
+    | ./manage.py shell
+  args:
+    chdir: '{{ [[ role_name ]]__git_checkout }}'
+    executable: 'bash'
+  become: True
+  become_user: '{{ [[ role_name ]]__user }}'
+  when: ("[[ role_name ]]" not in ansible_local)
+  no_log: True
+
+# Send PSK subpath URL to admin if needed [[ "[[[" ]]1
+- name: Send mail with the full URL of the [[ project_name ]] server
+  mail:
+    from: 'root@{{ ansible_fqdn }}'
+    subject: '{{ [[ role_name ]]__mail_subject }}'
+    to: '{{ [[ role_name ]]__mail_to|d([]) | list | join(",") }}'
+    charset: 'utf8'
+    body: '{{ [[ role_name ]]__mail_body }}'
+  when: ([[ role_name ]]__http_psk_subpath|d() and [[ role_name ]]__mail_to|d() and "[[ role_name ]]" not in ansible_local)
+
+# Save [[ project_name ]] local facts [[ "[[[" ]]1
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save [[ project_name ]] local facts
+  template:
+    src: 'etc/ansible/facts.d/[[ role_name ]].fact.j2'
+    dest: '/etc/ansible/facts.d/[[ role_name ]].fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: [[ role_name ]]__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: [[ role_name ]]__register_facts is changed

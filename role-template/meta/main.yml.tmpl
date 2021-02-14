@@ -1,0 +1,32 @@
+---
+# Copyright (C) [[ creation_year ]] [[ author_fullname ]] <[[ author_email ]]>
+# Copyright (C) [[ creation_year ]] DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Ensure that custom Ansible plugins and modules included in the main DebOps
+# collection are available to roles in other collections.
+collections: [ 'debops.debops' ]
+
+dependencies: []
+
+galaxy_info:
+
+  role_name: '[[ role_name ]]'
+  author: '[[ author_fullname ]]'
+  description: '[[ role_description ]]'
+  company: 'DebOps'
+  license: 'GPL-3.0-or-later'
+  min_ansible_version: '2.9.0'
+  platforms:
+    - name: Ubuntu
+      versions:
+        - trusty
+        - xenial
+        - zesty
+
+    - name: Debian
+      versions:
+        - stretch
+        - buster
+  galaxy_tags:
+    - TODO

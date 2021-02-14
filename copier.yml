@@ -1,0 +1,42 @@
+---
+# Copyright (C) 2021 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: CC0-1.0
+
+_subdirectory: role-template/
+_vcs_ref: HEAD
+_skip_if_exists:
+  - defaults/main.yml
+  - tasks/main.yml
+
+creation_year:
+  type: int
+  default: '[[ (now()|string).split("-")[0] ]]'
+
+author_fullname:
+  type: str
+  help: Your full name.
+
+author_email:
+  type: str
+  help: Your email.
+
+project_name:
+  type: str
+  help: Name of project the role manages, in the preferred form.
+
+role_name:
+  type: str
+  help: Name of the role without namespace.
+  default: '[[ project_name|lower|replace(" ", "_")|replace("-", "_") ]]'
+
+role_description:
+  type: str
+  help: Name of the role without namespace.
+  default: 'Install and manage [[ project_name ]]'
+
+# Hard coded for now.
+# spdx_license_identifier:
+#   type: str
+#   help: License of the role.
+#   default: GPL-3.0-or-later

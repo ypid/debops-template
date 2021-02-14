@@ -1,0 +1,476 @@
+---
+# .. vim: foldmarker=[[ "[[[,]]]" ]]:foldmethod=marker
+
+# .. Copyright (C) [[ creation_year ]] [[ author_fullname ]] <[[ author_email ]]>
+# .. Copyright (C) [[ creation_year ]] DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _[[ role_name ]]__ref_defaults:
+
+# debops.[[ role_name ]] default variables [[ "[[[" ]]
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Domain name configuration [[ "[[[" ]]
+# -----------------------------
+
+# .. envvar:: [[ role_name ]]__domain [[ "[[[" ]]
+#
+# The DNS domain used by other variables in the ``debops.[[ role_name ]]`` role.
+[[ role_name ]]__domain: '{{ ansible_domain }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__fqdn [[ "[[[" ]]
+#
+# String of the Fully Qualified domain names on which the [[ project_name ]] application
+# will be available, used by the webserver.
+[[ role_name ]]__fqdn: '[[ role_name ]].{{ [[ role_name ]]__domain }}'
+
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# APT packages [[ "[[[" ]]
+# ----------------
+
+# .. envvar:: [[ role_name ]]__base_packages [[ "[[[" ]]
+#
+# List of APT packages which are required by the [[ project_name ]] server.
+[[ role_name ]]__base_packages:
+  - 'git'
+                                                                   # [[ "]]]" ]]
+                                                                   #
+# .. envvar:: [[ role_name ]]__packages [[ "[[[" ]]
+#
+# List of additional APT packages to install with [[ project_name ]].
+[[ role_name ]]__packages: []
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# Application user, group, home [[ "[[[" ]]
+# ---------------------------------
+
+# .. envvar:: [[ role_name ]]__user [[ "[[[" ]]
+#
+# Name of the UNIX system account used to manage [[ project_name ]].
+[[ role_name ]]__user: '[[ role_name ]]'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__group [[ "[[[" ]]
+#
+# Name of the UNIX primary group used to manage [[ project_name ]].
+[[ role_name ]]__group: '[[ role_name ]]'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__gecos [[ "[[[" ]]
+#
+# Contents of the GECOS field set for the [[ project_name ]] account.
+[[ role_name ]]__gecos: '[[ project_name ]]'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__shell [[ "[[[" ]]
+#
+# The default shell set on the [[ project_name ]] account.
+[[ role_name ]]__shell: '/usr/sbin/nologin'
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# Directory paths [[ "[[[" ]]
+# -------------------
+
+# .. envvar:: [[ role_name ]]__home [[ "[[[" ]]
+#
+# The [[ project_name ]] account home directory.
+[[ role_name ]]__home: '{{ (ansible_local.fhs.home | d("/var/local"))
+                   + "/" + [[ role_name ]]__user }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__etc [[ "[[[" ]]
+#
+# Directory where the role stores [[ project_name ]] configuration.
+[[ role_name ]]__etc: '/etc/[[ role_name ]]-server'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__src [[ "[[[" ]]
+#
+# Directory where the role stores [[ project_name ]] version control sources.
+[[ role_name ]]__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
+                  + "/" + [[ role_name ]]__user }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__lib [[ "[[[" ]]
+#
+# Directory where the [[ project_name ]] server directory is located.
+[[ role_name ]]__lib: '{{ (ansible_local.fhs.lib | d("/usr/local/lib"))
+                  + "/" + [[ role_name ]]__user }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__data [[ "[[[" ]]
+#
+# Directory where [[ project_name ]] data is stored.
+[[ role_name ]]__data: '{{ (ansible_local.fhs.data | d("/srv"))
+                   + "/" + [[ role_name ]]__user }}'
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# Application sources and deployment [[ "[[[" ]]
+# --------------------------------------
+
+# .. envvar:: [[ role_name ]]__git_gpg_key_id [[ "[[[" ]]
+#
+# The GPG ID of the key used for signing [[ project_name ]] releases.
+[[ role_name ]]__git_gpg_key_id: '9E21 F091 FC39 5F36 6A47  43E2 D2E5 84C3 7C47 7933'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__git_repo [[ "[[[" ]]
+#
+# The URI of the [[ project_name ]] :command:`git` source repository.
+[[ role_name ]]__git_repo: 'https://github.com/[[ role_name ]]/server.git'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__git_version [[ "[[[" ]]
+#
+# The :command:`git` branch or tag which will be installed.
+# git commit hash lock to release 0.2.2.
+# Note that this hash locking is not very effective because the main
+# implementation of [[ project_name ]] is in additional Python packages.
+[[ role_name ]]__git_version: 'b026643cceae07b039942bf0c990ccf917eb072a'
+
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__git_dest [[ "[[[" ]]
+#
+# Path where the :command:`git` source bare repository will be stored.
+[[ role_name ]]__git_dest: '{{ [[ role_name ]]__src + "/" + [[ role_name ]]__git_repo.split("://")[1] }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__git_checkout [[ "[[[" ]]
+#
+# Path where [[ project_name ]] sources will be checked out (installation path).
+[[ role_name ]]__git_checkout: '{{ [[ role_name ]]__lib + "/app" }}'
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# Python virtualenv configuration [[ "[[[" ]]
+# -----------------------------------
+
+# .. envvar:: [[ role_name ]]__virtualenv [[ "[[[" ]]
+#
+# Path where the [[ project_name ]] ``virtualenv`` directory will be stored.
+[[ role_name ]]__virtualenv: '{{ [[ role_name ]]__lib + "/virtualenv" }}'
+
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# [[ project_name ]] configuration options [[ "[[[" ]]
+# --------------------------------
+
+# .. envvar:: [[ role_name ]]__config_allowed_hosts [[ "[[[" ]]
+#
+# List of domain names under which the [[ project_name ]] server will accept
+# connections. Specify ``*`` to accept connections to any domain name.
+[[ role_name ]]__config_allowed_hosts:
+  - '{{ ansible_hostname }}'
+  - '{{ ansible_fqdn }}'
+  - '{{ [[ role_name ]]__fqdn }}'
+  - 'localhost'
+  - '[::1]'
+  - '127.0.0.1'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__config_secret_key [[ "[[[" ]]
+#
+# The Django secret key used by the [[ project_name ]] server. It will be shared by
+# all hosts on the same domain.
+[[ role_name ]]__config_secret_key: '{{ lookup("password", secret + "/[[ role_name ]]/" +
+                                [[ role_name ]]__domain + "/config/secret_key length=64") }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__config_secret_key_filepath [[ "[[[" ]]
+#
+# File path where the Django secret key will be stored on the remote host.
+[[ role_name ]]__config_secret_key_filepath: '{{ [[ role_name ]]__etc + "/secret.txt" }}'
+
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# Initial superuser account [[ "[[[" ]]
+# -----------------------------
+
+# .. envvar:: [[ role_name ]]__superuser_name [[ "[[[" ]]
+#
+# Name of the initial admin account created by the role.
+[[ role_name ]]__superuser_name: '{{ ansible_local.core.admin_users[0]
+                             if (ansible_local.core.admin_users|d())
+                             else "admin" }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__superuser_email [[ "[[[" ]]
+#
+# E-mail address of the initial admin account created by the role.
+[[ role_name ]]__superuser_email: '{{ ansible_local.core.admin_private_email[0]
+                              if (ansible_local.core.admin_private_email|d())
+                              else ("root@" + [[ role_name ]]__domain) }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__superuser_password [[ "[[[" ]]
+#
+# Password set for the initial admin account created by the role.
+[[ role_name ]]__superuser_password: '{{ lookup("password", secret + "/[[ role_name ]]/" +
+                                 inventory_hostname + "/superuser/" +
+                                 [[ role_name ]]__superuser_name + "/password") }}'
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# Internal application settings [[ "[[[" ]]
+# ---------------------------------
+
+# .. envvar:: [[ role_name ]]__app_name [[ "[[[" ]]
+#
+# Name of the [[ project_name ]] server processes (workers) set by the master process.
+[[ role_name ]]__app_name: '{{ [[ role_name ]]__user }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__app_runtime_dir [[ "[[[" ]]
+#
+# Name of the subdirectory in the :file:`/run/` directory where the [[ project_name ]]
+# application will bind its UNIX socket. The default is selected so that
+# configuration of the ``gunicorn`` service is idempotent.
+[[ role_name ]]__app_runtime_dir: '{{ "gunicorn"
+                              if (ansible_distribution_release in
+                                  [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+                              else "gunicorn-[[ role_name ]]" }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__app_bind [[ "[[[" ]]
+#
+# Specify either an UNIX or TCP socket on which the [[ project_name ]] server should
+# bind and listen for connections.
+[[ role_name ]]__app_bind: 'unix:/run/{{ [[ role_name ]]__app_runtime_dir }}/[[ role_name ]].sock'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__app_workers [[ "[[[" ]]
+#
+# Number of worker threads to start for [[ project_name ]] server.
+[[ role_name ]]__app_workers: '{{ ansible_processor_vcpus|int + 1 }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__app_timeout [[ "[[[" ]]
+#
+# Number of seconds after which non-responsive worker threads will be killed
+# and restarted. [[ project_name ]] installations with lots of objects might require longer
+# timeouts for API access.
+[[ role_name ]]__app_timeout: '900'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__app_params [[ "[[[" ]]
+#
+# List of parameters passed to the ``gunicorn`` process manager.
+[[ role_name ]]__app_params:
+  - '--name={{ [[ role_name ]]__app_name }}'
+  - '--bind={{ [[ role_name ]]__app_bind }}'
+  - '--workers={{ [[ role_name ]]__app_workers }}'
+  - '--timeout={{ [[ role_name ]]__app_timeout }}'
+  - '[[ role_name ]]_server.wsgi'
+                                                                   # [[ "]]]" ]]
+                                                                   # [[ "]]]" ]]
+# Other variables [[ "[[[" ]]
+# -------------------
+
+# .. envvar:: [[ role_name ]]__max_file_size [[ "[[[" ]]
+#
+# Maximum upload size, in MB.
+[[ role_name ]]__max_file_size: '5'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__python_version [[ "[[[" ]]
+#
+# Python version, needed to refer to static files as installed by Python modules.
+[[ role_name ]]__python_version: '{{ ansible_local.python.version3|d("3.x") }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__http_psk_subpath_enabled [[ "[[[" ]]
+#
+# Whether [[ project_name ]] should be deployed on a random subpath that acts as a
+# protection of the web app/API from people not knowing this PSK.
+# For a discussion in which scenarios this can make sense, refer to
+# `RFC: Support subpath/subdir hosting for additional security`__.
+#
+# .. __: https://github.com/debops/debops/issues/1233
+[[ role_name ]]__http_psk_subpath_enabled: False
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__http_psk_subpath [[ "[[[" ]]
+#
+# PSK used as subpath that acts as the first layer of defense in a security in
+# depth concept if enabled.
+[[ role_name ]]__http_psk_subpath: '{{ lookup("password", secret + "/[[ role_name ]]/" +
+                                 inventory_hostname + "/config/subpath chars=ascii_letters,digits length=23")
+                               if [[ role_name ]]__http_psk_subpath_enabled|bool
+                               else "" }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__url [[ "[[[" ]]
+#
+# The URL where the [[ project_name ]] server will be reachable. Exposed as variable here
+# as you might want to use it in your custom user password lookup for
+# integrating into your password manager.
+[[ role_name ]]__url: '{{ "https://" + [[ role_name ]]__fqdn + "/" + [[ role_name ]]__http_psk_subpath }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__admin_auth_basic_realm [[ "[[[" ]]
+#
+# A string which will be displayed as the realm in the browser user/password
+# dialog box during HTTP Basic Authentication for the admin interface.
+[[ role_name ]]__admin_auth_basic_realm: 'Access to [[ project_name ]] admin interface is restricted'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__admin_auth_basic_filename [[ "[[[" ]]
+#
+# Absolute path to the file that contains usernames and passwords for HTTP
+# Basic Authentication for the admin interface.
+[[ role_name ]]__admin_auth_basic_filename: ''
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__mail_to [[ "[[[" ]]
+#
+# List of recipients to which a mail will be send with the full URL of the
+# [[ project_name ]] server in case :envvar:`[[ role_name ]]__http_psk_subpath` is set.
+[[ role_name ]]__mail_to: [ 'root@{{ ansible_domain }}' ]
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__mail_subject [[ "[[[" ]]
+#
+# Subject of the Email to be send with the full service URL.
+[[ role_name ]]__mail_subject: 'PSK subpath URL to [[ project_name ]] on {{ ansible_fqdn }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__mail_body [[ "[[[" ]]
+#
+# Body of the Email to be send with the full service URL.
+[[ role_name ]]__mail_body: |
+  [[ project_name ]] has been deployed for the first time on {{ ansible_fqdn }}.
+  You have chosen to deploy the service on a random subpath thus the URL is
+  needed to access the service.
+
+  URL: {{ [[ role_name ]]__url }}
+
+  You can continue the user setup in the Django administration interface of [[ project_name ]] over at:
+  {{ [[ role_name ]]__url }}/admin
+
+  Have a nice day :)
+
+# [[ "]]]" ]]
+# [[ "]]]" ]]
+# Configuration variables for other Ansible roles [[ "[[[" ]]
+# ---------------------------------------------------
+
+# .. envvar:: [[ role_name ]]__keyring__dependent_gpg_keys [[ "[[[" ]]
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+[[ role_name ]]__keyring__dependent_gpg_keys:
+
+  - user: '{{ [[ role_name ]]__user }}'
+    group: '{{ [[ role_name ]]__group }}'
+    home: '{{ [[ role_name ]]__home }}'
+    id: '{{ [[ role_name ]]__git_gpg_key_id }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__python__dependent_packages3 [[ "[[[" ]]
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+[[ role_name ]]__python__dependent_packages3:
+
+  - 'python3-setproctitle'
+
+  - 'python3-dev'
+
+  ## Django>=2.1.7,<2.1.999 is required which is currently only in Debian sid.
+  ## We install this with pip in a virtualenv for now.
+  # - 'python3-django'
+
+  - 'python3-tz'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__gunicorn__dependent_applications [[ "[[[" ]]
+#
+# Configuration for the :ref:`debops.gunicorn` Ansible role.
+[[ role_name ]]__gunicorn__dependent_applications:
+  - name: '[[ role_name ]]'
+    mode: 'wsgi'
+    working_dir: '{{ [[ role_name ]]__git_checkout }}'
+    python: '{{ [[ role_name ]]__virtualenv + "/bin/python3" }}'
+    user: '{{ [[ role_name ]]__user }}'
+    group: '{{ [[ role_name ]]__group }}'
+    home: '{{ [[ role_name ]]__home }}'
+    system: True
+    timeout: '{{ [[ role_name ]]__app_timeout }}'
+    workers: '{{ [[ role_name ]]__app_workers }}'
+    args: '{{ [[ role_name ]]__app_params }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__nginx__dependent_upstreams [[ "[[[" ]]
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+[[ role_name ]]__nginx__dependent_upstreams:
+  - name: '[[ role_name ]]'
+    server: '{{ [[ role_name ]]__app_bind }}'
+
+                                                                   # [[ "]]]" ]]
+# .. envvar:: [[ role_name ]]__nginx__dependent_servers [[ "[[[" ]]
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+[[ role_name ]]__nginx__dependent_servers:
+  - name: '{{ [[ role_name ]]__fqdn }}'
+    by_role: 'debops.[[ role_name ]]'
+    filename: 'debops.[[ role_name ]]'
+    favicon: False
+    http_referrer_policy: 'same-origin'
+    options: |
+      client_max_body_size {{ [[ role_name ]]__max_file_size }}M;
+
+    location_list:
+
+      - pattern: '/'
+        options: |-
+          deny all;
+        enabled: '{{ [[ role_name ]]__http_psk_subpath_enabled|bool }}'
+
+      - pattern: '/static/admin/'
+        options: |-
+          alias {{ [[ role_name ]]__virtualenv + "/lib/python" + ([[ role_name ]]__python_version.split('.')[:2] | join('.')) }}/site-packages/django/contrib/admin/static/admin/;
+
+      - pattern: '/static/rest_framework/'
+        options: |-
+          alias {{ [[ role_name ]]__virtualenv + "/lib/python" + ([[ role_name ]]__python_version.split('.')[:2] | join('.')) }}/site-packages/rest_framework/static/rest_framework/;
+
+      - pattern: '/{{ [[ role_name ]]__http_psk_subpath }}'
+        options: |-
+          proxy_pass http://[[ role_name ]];
+          proxy_set_header X-Forwarded-Host $server_name;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          {% if [[ role_name ]]__http_psk_subpath|d() %}
+          proxy_set_header SCRIPT_NAME /{{ [[ role_name ]]__http_psk_subpath }};
+          {% endif %}
+          proxy_connect_timeout {{ [[ role_name ]]__app_timeout }};
+          proxy_send_timeout {{ [[ role_name ]]__app_timeout }};
+          proxy_read_timeout {{ [[ role_name ]]__app_timeout }};
+
+      - pattern: '{{ (("/" + [[ role_name ]]__http_psk_subpath)
+                      if ([[ role_name ]]__http_psk_subpath|d())
+                      else "") + "/admin" }}'
+        options: |-
+          proxy_pass http://[[ role_name ]];
+          proxy_set_header X-Forwarded-Host $server_name;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          {% if [[ role_name ]]__http_psk_subpath|d() %}
+          proxy_set_header SCRIPT_NAME /{{ [[ role_name ]]__http_psk_subpath }};
+          {% endif %}
+          proxy_connect_timeout {{ [[ role_name ]]__app_timeout }};
+          proxy_send_timeout {{ [[ role_name ]]__app_timeout }};
+          proxy_read_timeout {{ [[ role_name ]]__app_timeout }};
+
+          auth_basic "{{ [[ role_name ]]__admin_auth_basic_realm }}";
+          auth_basic_user_file {{ [[ role_name ]]__admin_auth_basic_filename }};
+        enabled: '{{ True if [[ role_name ]]__admin_auth_basic_filename|d() else False }}'
+# [[ "]]]" ]]
+# [[ "]]]" ]]
+# [[ "]]]" ]]
