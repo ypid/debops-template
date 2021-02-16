@@ -33,7 +33,8 @@ author_email:
 
 project_name:
   type: str
-  help: Name of project the role manages, in the preferred form.
+  help: Name of project the role manages, in the preferred form. If not applicable, leave at default (TODO).
+  default: TODO
 
 role_name:
   type: str
